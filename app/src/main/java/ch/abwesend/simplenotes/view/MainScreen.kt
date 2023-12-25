@@ -57,6 +57,7 @@ object MainScreen {
         val context = LocalContext.current
         val placeHolder = stringResource(id = R.string.notes_text_placeholder)
 
+        var initialNotesText: String? by remember { mutableStateOf(null) }
         var currentNotesText by remember { mutableStateOf(placeHolder) }
         var initialized by remember { mutableStateOf(false) }
 
@@ -72,10 +73,11 @@ object MainScreen {
                 currentNotesText = lineSeparator + currentNotesText
             }
 
+            initialNotesText = currentNotesText
             initialized = true
         }
 
-        Scaffold(topBar = { TopBar(currentNotesText, onValueChanged) }) { padding ->
+        Scaffold(topBar = { TopBar(currentNotesText, initialNotesText, onValueChanged) }) { padding ->
             Column(modifier = Modifier.padding(padding)) {
                 if (initialized) {
                     Notes(currentNotesText, onValueChanged)
@@ -102,22 +104,47 @@ object MainScreen {
     }
 
     @Composable
-    private fun TopBar(currentValue: String, valueChanged: (String) -> Unit) {
+    private fun TopBar(currentText: String, initialText: String?, textChanged: (String) -> Unit) {
+        var revertedText: String? by remember { mutableStateOf(null) }
+
         val colors = TopAppBarDefaults.smallTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary,
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
             navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
             actionIconContentColor = MaterialTheme.colorScheme.onSecondary
         )
+
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.app_name)) },
             colors = colors,
-            actions = { TopBarActionMenu(currentValue, valueChanged) },
+            actions = {
+                TopBarActionMenu(
+                    currentText = currentText,
+                    initialText = initialText,
+                    revertedText = revertedText,
+                    clearText = { textChanged("") },
+                    revertChanges = {
+                        revertedText = currentText
+                        textChanged(initialText.orEmpty())
+                    },
+                    undoRevertChanges = {
+                        textChanged(revertedText.orEmpty())
+                        revertedText = null
+                    }
+                )
+            },
         )
     }
 
     @Composable
-    private fun TopBarActionMenu(currentText: String, textChanged: (String) -> Unit) {
+    private fun TopBarActionMenu(
+        currentText: String,
+        initialText: String?,
+        revertedText: String?,
+        clearText: () -> Unit,
+        revertChanges: () -> Unit,
+        undoRevertChanges: () -> Unit,
+    ) {
         var expanded: Boolean by remember { mutableStateOf(false) }
         val clipboardManager: ClipboardManager = LocalClipboardManager.current
         val menuItemClicked: () -> Unit = { expanded = false }
@@ -143,15 +170,28 @@ object MainScreen {
 
             Divider()
 
-            MenuItemClear { newText ->
-                textChanged(newText)
+            MenuItemClear {
+                clearText()
                 menuItemClicked()
             }
+
+            MenuSectionRevertChanges(
+                initialText = initialText,
+                revertedText = revertedText,
+                revertChanges = {
+                    revertChanges()
+                    menuItemClicked()
+                },
+                undoRevertChanges = {
+                    undoRevertChanges()
+                    menuItemClicked()
+                }
+            )
         }
     }
 
     @Composable
-    private fun MenuItemClear(textChanged: (String) -> Unit) {
+    private fun MenuItemClear(clearText: () -> Unit) {
         var showConfirmationDialog: Boolean by remember { mutableStateOf(false) }
 
         DropdownMenuItem(
@@ -167,7 +207,49 @@ object MainScreen {
                 noButtonLabel = R.string.cancel,
                 onYes = {
                     showConfirmationDialog = false
-                    textChanged("")
+                    clearText()
+                },
+                onNo = { showConfirmationDialog = false }
+            )
+        }
+    }
+
+    @Composable
+    private fun MenuSectionRevertChanges(
+        initialText: String?,
+        revertedText: String?,
+        revertChanges: () -> Unit,
+        undoRevertChanges: () -> Unit,
+    ) {
+        initialText?.let {
+            Divider()
+            MenuItemRevertChanges { revertChanges() }
+        }
+
+        revertedText?.let {
+            DropdownMenuItem(
+                text = { Text(stringResource(id = R.string.undo_revert_changes)) },
+                onClick = undoRevertChanges
+            )
+        }
+    }
+
+    @Composable
+    private fun MenuItemRevertChanges(revertText: () -> Unit) {
+        var showConfirmationDialog: Boolean by remember { mutableStateOf(false) }
+
+        DropdownMenuItem(
+            text = { Text(stringResource(id = R.string.revert_changes)) },
+            onClick = { showConfirmationDialog = true }
+        )
+
+        if (showConfirmationDialog) {
+            YesNoDialog(
+                title = R.string.revert_changes_confirmation_title,
+                text = R.string.revert_changes_confirmation_text,
+                onYes = {
+                    showConfirmationDialog = false
+                    revertText()
                 },
                 onNo = { showConfirmationDialog = false }
             )

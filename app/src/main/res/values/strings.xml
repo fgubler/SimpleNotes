@@ -14,6 +14,12 @@
     <string name="clear_notes_confirmation_title">Clear notes</string>
     <string name="clear_notes_confirmation_text">Are you sure you want to delete all notes? They cannot be restored afterwards.</string>
 
+    <string name="revert_changes">Revert changes</string>
+    <string name="revert_changes_confirmation_title">Revert changes</string>
+    <string name="revert_changes_confirmation_text">Are you sure you want to revert all changes since the last app-start?</string>
+
+    <string name="undo_revert_changes">Undo revert changes</string>
+
     <string name="action_menu">Action Menu</string>
     <string name="scroll_to_top">Scroll to top</string>
     <string name="scroll_to_bottom">Scroll to bottom</string>
