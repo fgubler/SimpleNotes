@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,6 +42,7 @@ import ch.abwesend.simplenotes.R
 import ch.abwesend.simplenotes.repository.NoteRepository
 import ch.abwesend.simplenotes.ui.theme.noteBackground
 import ch.abwesend.simplenotes.view.components.LoadingIndicatorFullScreen
+import ch.abwesend.simplenotes.view.components.YesNoDialog
 import kotlinx.coroutines.flow.first
 
 @ExperimentalMaterial3Api
@@ -56,18 +59,20 @@ object MainScreen {
         var currentNotesText by remember { mutableStateOf(placeHolder) }
         var initialized by remember { mutableStateOf(false) }
 
+        val onValueChanged: (String) -> Unit = { newValue ->
+            currentNotesText = newValue
+            NoteRepository.storeNotes(context, newValue)
+        }
+
         LaunchedEffect(Unit) {
             currentNotesText = NoteRepository.getNotes(context).first()
             initialized = true
         }
 
-        Scaffold(topBar = { TopBar(currentNotesText) }) { padding ->
+        Scaffold(topBar = { TopBar(currentNotesText, onValueChanged) }) { padding ->
             Column(modifier = Modifier.padding(padding)) {
                 if (initialized) {
-                    Notes(currentNotesText) { newValue ->
-                        currentNotesText = newValue
-                        NoteRepository.storeNotes(context, newValue)
-                    }
+                    Notes(currentNotesText, onValueChanged)
                 } else {
                     LoadingIndicatorFullScreen(textAfterIndicator = R.string.loading_notes)
                 }
@@ -91,7 +96,7 @@ object MainScreen {
     }
 
     @Composable
-    private fun TopBar(currentValue: String) {
+    private fun TopBar(currentValue: String, valueChanged: (String) -> Unit) {
         val colors = TopAppBarDefaults.smallTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary,
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -101,14 +106,15 @@ object MainScreen {
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.app_name)) },
             colors = colors,
-            actions = { TopBarActionMenu(currentValue) },
+            actions = { TopBarActionMenu(currentValue, valueChanged) },
         )
     }
 
     @Composable
-    private fun TopBarActionMenu(currentText: String) {
+    private fun TopBarActionMenu(currentText: String, textChanged: (String) -> Unit) {
         var expanded: Boolean by remember { mutableStateOf(false) }
         val clipboardManager: ClipboardManager = LocalClipboardManager.current
+        val menuItemClicked: () -> Unit = { expanded = false }
 
         Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
             IconButton(onClick = { expanded = !expanded }) {
@@ -120,9 +126,44 @@ object MainScreen {
         }
 
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            val copyLabel = stringResource(id = R.string.copy_to_clipboard)
             DropdownMenuItem(
-                text = { Text(stringResource(id = R.string.copy_to_clipboard)) },
-                onClick = { clipboardManager.setText(AnnotatedString(currentText)) }
+                text = { Text(copyLabel) },
+                onClick = {
+                    clipboardManager.setText(AnnotatedString(currentText))
+                    menuItemClicked()
+                }
+            )
+
+            Divider()
+
+            MenuItemClear { newText ->
+                textChanged(newText)
+                menuItemClicked()
+            }
+        }
+    }
+
+    @Composable
+    private fun MenuItemClear(textChanged: (String) -> Unit) {
+        var showConfirmationDialog: Boolean by remember { mutableStateOf(false) }
+
+        DropdownMenuItem(
+            text = { Text(stringResource(id = R.string.clear_notes)) },
+            onClick = { showConfirmationDialog = true }
+        )
+
+        if (showConfirmationDialog) {
+            YesNoDialog(
+                title = R.string.clear_notes_confirmation_title,
+                text = R.string.clear_notes_confirmation_text,
+                yesButtonLabel = R.string.delete,
+                noButtonLabel = R.string.cancel,
+                onYes = {
+                    showConfirmationDialog = false
+                    textChanged("")
+                },
+                onNo = { showConfirmationDialog = false }
             )
         }
     }

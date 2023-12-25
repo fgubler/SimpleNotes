@@ -1,8 +1,19 @@
 <resources>
     <string name="app_name">Simple Notes</string>
-    <string name="copy_to_clipboard">Copy to Clipboard</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
     <string name="notes_text_placeholder">Add your simple notes here…</string>
     <string name="loading_notes">Loading notes…</string>
+
+    <string name="copy_to_clipboard">Copy to Clipboard</string>
+
+    <string name="clear_notes">Clear notes</string>
+    <string name="clear_notes_confirmation_title">Clear notes</string>
+    <string name="clear_notes_confirmation_text">Are you sure you want to delete all notes? They cannot be restored afterwards.</string>
+
     <string name="action_menu">Action Menu</string>
     <string name="scroll_to_top">Scroll to top</string>
     <string name="scroll_to_bottom">Scroll to bottom</string>
