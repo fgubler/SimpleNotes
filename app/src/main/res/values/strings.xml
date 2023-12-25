@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">Simple Notes</string>
     <string name="copy_to_clipboard">Copy to Clipboard</string>
+    <string name="notes_text_placeholder">Add your simple notes here…</string>
+    <string name="loading_notes">Loading notes…</string>
     <string name="action_menu">Action Menu</string>
+    <string name="scroll_to_top">Scroll to top</string>
+    <string name="scroll_to_bottom">Scroll to bottom</string>
 </resources>

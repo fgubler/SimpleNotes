@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,11 +35,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import ch.abwesend.simplenotes.repository.NoteRepository
 import ch.abwesend.simplenotes.ui.theme.SimpleNotesTheme
 import ch.abwesend.simplenotes.ui.theme.noteBackground
+import ch.abwesend.simplenotes.view.components.LoadingIndicatorFullScreen
+import kotlinx.coroutines.flow.first
 
 @ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
@@ -53,11 +58,27 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun MainScreen() {
-        var currentNotesText by remember { mutableStateOf("") }
+        val context = LocalContext.current
+        val placeHolder = stringResource(id = R.string.notes_text_placeholder)
+
+        var currentNotesText by remember { mutableStateOf(placeHolder) }
+        var initialized by remember { mutableStateOf(false) }
+
+        LaunchedEffect(Unit) {
+            currentNotesText = NoteRepository.getNotes(context).first()
+            initialized = true
+        }
 
         Scaffold(topBar = { TopBar(currentNotesText) }) { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                Notes(currentNotesText) { newValue -> currentNotesText = newValue }
+                if (initialized) {
+                    Notes(currentNotesText) { newValue ->
+                        currentNotesText = newValue
+                        NoteRepository.storeNotes(context, newValue)
+                    }
+                } else {
+                    LoadingIndicatorFullScreen(textAfterIndicator = R.string.loading_notes)
+                }
             }
         }
     }
