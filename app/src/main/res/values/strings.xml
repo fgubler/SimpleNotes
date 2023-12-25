@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Simple Notes</string>
+    <string name="copy_to_clipboard">Copy to Clipboard</string>
+    <string name="action_menu">Action Menu</string>
+</resources>
