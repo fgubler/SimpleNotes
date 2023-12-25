@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -47,6 +46,8 @@ import kotlinx.coroutines.flow.first
 
 @ExperimentalMaterial3Api
 object MainScreen {
+    private val lineSeparator: String by lazy { System.lineSeparator() }
+
     /**
      * The value is only loaded initially from the Data-Store.
      * The intermediate state is kept here directly for performance-reasons.
@@ -66,6 +67,11 @@ object MainScreen {
 
         LaunchedEffect(Unit) {
             currentNotesText = NoteRepository.getNotes(context).first()
+
+            if (!currentNotesText.startsWith(lineSeparator)) {
+                currentNotesText = lineSeparator + currentNotesText
+            }
+
             initialized = true
         }
 
