@@ -28,6 +28,8 @@ import androidx.compose.ui.text.AnnotatedString
 import ch.abwesend.simplenotes.R
 import ch.abwesend.simplenotes.view.components.YesNoDialog
 
+private const val PRIVACY_POLICY_URL = "https://www.privacypolicies.com/live/1d03d251-c5d3-4962-bba4-785d0f74b2a7"
+
 @ExperimentalMaterial3Api
 @Composable
 fun TopBar(currentText: String, initialText: String?, textChanged: (String) -> Unit) {
@@ -112,6 +114,12 @@ private fun TopBarActionMenu(
                 undoRevertChanges()
                 menuItemClicked()
             }
+        )
+
+        Divider()
+        DropdownMenuItem(
+            text = { Text(stringResource(id = R.string.copy_privacy_policy)) },
+            onClick = { clipboardManager.setText(AnnotatedString(PRIVACY_POLICY_URL)) }
         )
     }
 }

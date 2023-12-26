@@ -20,6 +20,8 @@
 
     <string name="undo_revert_changes">Undo revert changes</string>
 
+    <string name="copy_privacy_policy">Copy privacy policy</string>
+
     <string name="action_menu">Action Menu</string>
     <string name="scroll_to_top">Scroll to top</string>
     <string name="scroll_to_bottom">Scroll to bottom</string>
