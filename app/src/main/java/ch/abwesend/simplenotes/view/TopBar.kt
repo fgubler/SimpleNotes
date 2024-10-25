@@ -35,7 +35,7 @@ private const val PRIVACY_POLICY_URL = "https://www.privacypolicies.com/live/1d0
 fun TopBar(currentText: String, initialText: String?, textChanged: (String) -> Unit) {
     var revertedText: String? by remember { mutableStateOf(null) }
 
-    val colors = TopAppBarDefaults.smallTopAppBarColors(
+    val colors = TopAppBarDefaults.topAppBarColors().copy(
         containerColor = MaterialTheme.colorScheme.primary,
         titleContentColor = MaterialTheme.colorScheme.onPrimary,
         navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
