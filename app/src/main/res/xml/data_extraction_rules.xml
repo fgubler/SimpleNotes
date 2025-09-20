@@ -3,10 +3,6 @@
    for details.
 -->
 <data-extraction-rules>
-    <cloud-backup>
-        <!-- Do not include DataStore files in the cloud backup for privacy reasons! -->
-        <exclude domain="file" path="datastore"/>
-    </cloud-backup>
     <device-transfer>
         <!-- Include DataStore files in device-to-device transfer -->
         <include domain="file" path="datastore"/>
